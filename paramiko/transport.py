@@ -1537,12 +1537,15 @@ class Transport (threading.Thread, ClosingContextManager):
 
     ###  internals...
 
-    def _log(self, level, msg, *args):
+    def _log(self, level, msg, *args, **kwargs):
+        exc_info = kwargs.get('exc_info', False)
+        exc_info = level == ERROR or exc_info
+
         if issubclass(type(msg), list):
             for m in msg:
-                self.logger.log(level, m)
+                self.logger.log(level, m, exc_info=exc_info)
         else:
-            self.logger.log(level, msg, *args)
+            self.logger.log(level, msg, *args, exc_info=exc_info)
 
     def _get_modulus_pack(self):
         """used by KexGex to find primes for group exchange"""
@@ -1768,11 +1771,9 @@ class Transport (threading.Thread, ClosingContextManager):
                     self.packetizer.complete_handshake()
             except SSHException as e:
                 self._log(ERROR, 'Exception: ' + str(e))
-                self._log(ERROR, util.tb_strings())
                 self.saved_exception = e
             except EOFError as e:
-                self._log(DEBUG, 'EOF in transport thread')
-                #self._log(DEBUG, util.tb_strings())
+                self._log(ERROR, 'EOF in transport thread')
                 self.saved_exception = e
             except socket.error as e:
                 if type(e.args) is tuple:
@@ -1786,7 +1787,6 @@ class Transport (threading.Thread, ClosingContextManager):
                 self.saved_exception = e
             except Exception as e:
                 self._log(ERROR, 'Unknown exception: ' + str(e))
-                self._log(ERROR, util.tb_strings())
                 self.saved_exception = e
             _active_threads.remove(self)
             for chan in list(self._channels.values()):
