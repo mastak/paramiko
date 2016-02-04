@@ -61,7 +61,7 @@ from paramiko.ecdsakey import ECDSAKey
 from paramiko.server import ServerInterface
 from paramiko.sftp_client import SFTPClient
 from paramiko.ssh_exception import (SSHException, BadAuthenticationType,
-                                    ChannelException, ProxyCommandFailure)
+                                    ChannelException, ProxyCommandFailure, ProtocolBannerError)
 from paramiko.util import retry_on_signal, ClosingContextManager, clamp_value
 
 from Crypto.Cipher import Blowfish, AES, DES3, ARC4
@@ -1772,6 +1772,9 @@ class Transport (threading.Thread, ClosingContextManager):
             except SSHException as e:
                 self._log(ERROR, 'Exception: ' + str(e))
                 self.saved_exception = e
+            except ProtocolBannerError as e:
+                self._log(WARNING, str(e))
+                self.saved_exception = e
             except EOFError as e:
                 if self.active:
                     self._log(ERROR, 'EOF in transport thread')
@@ -1856,7 +1859,7 @@ class Transport (threading.Thread, ClosingContextManager):
             except ProxyCommandFailure:
                 raise
             except Exception as e:
-                raise SSHException('Error reading SSH protocol banner' + str(e))
+                raise ProtocolBannerError('Error reading SSH protocol banner' + str(e))
             if buf[:4] == 'SSH-':
                 break
             self._log(DEBUG, 'Banner: ' + buf)
