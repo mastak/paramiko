@@ -1769,11 +1769,11 @@ class Transport (threading.Thread, ClosingContextManager):
                         msg.add_int(m.seqno)
                         self._send_message(msg)
                     self.packetizer.complete_handshake()
-            except SSHException as e:
-                self._log(ERROR, 'Exception: ' + str(e))
-                self.saved_exception = e
             except ProtocolBannerError as e:
                 self._log(WARNING, str(e))
+                self.saved_exception = e
+            except SSHException as e:
+                self._log(ERROR, 'Exception: ' + str(e))
                 self.saved_exception = e
             except EOFError as e:
                 if self.active:
