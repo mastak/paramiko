@@ -1773,8 +1773,9 @@ class Transport (threading.Thread, ClosingContextManager):
                 self._log(ERROR, 'Exception: ' + str(e))
                 self.saved_exception = e
             except EOFError as e:
-                self._log(ERROR, 'EOF in transport thread')
-                self.saved_exception = e
+                if self.active:
+                    self._log(ERROR, 'EOF in transport thread')
+                    self.saved_exception = e
             except socket.error as e:
                 if type(e.args) is tuple:
                     if e.args:
