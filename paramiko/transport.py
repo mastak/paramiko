@@ -1770,7 +1770,7 @@ class Transport (threading.Thread, ClosingContextManager):
                         self._send_message(msg)
                     self.packetizer.complete_handshake()
             except ProtocolBannerError as e:
-                self._log(WARNING, str(e))
+                self._log(WARNING, str(e), exc_info=True)
                 self.saved_exception = e
             except SSHException as e:
                 self._log(ERROR, 'Exception: ' + str(e))
