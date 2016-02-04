@@ -137,6 +137,13 @@ class ProxyCommandFailure (SSHException):
         self.args = (command, error, )
 
 
+class ProtocolBannerError(SSHException):
+    """
+    Exception raised by failures in reading SSH protocol banner.
+    """
+    pass
+
+
 class NoValidConnectionsError(socket.error):
     """
     Multiple connection attempts were made and no families succeeded.
